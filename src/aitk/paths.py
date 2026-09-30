@@ -16,6 +16,15 @@ def home() -> Path:
     return Path(raw).expanduser() if raw else Path.home() / ".ai-trading-kit"
 
 
+def kit_command(*args: str) -> tuple[str, list[str]]:
+    """How another program (an AI app) starts the kit: the frozen one-file build runs itself, a normal
+    install runs `python -m aitk`."""
+    import sys
+    if getattr(sys, "frozen", False):
+        return sys.executable, list(args)
+    return sys.executable, ["-m", "aitk", *args]
+
+
 def ensure(path: Path) -> Path:
     path.mkdir(parents=True, exist_ok=True)
     return path

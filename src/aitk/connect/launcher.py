@@ -94,7 +94,8 @@ def run(recipe_id: str, store=None, stdin=None, stdout=None, stderr=None) -> int
 
 def app_entry(recipe: Recipe, python: str | None = None) -> dict:
     """The settings an AI app needs to start this connection. It holds no key."""
-    entry = {"command": python or sys.executable, "args": ["-m", "aitk", "run-connector", recipe.id]}
+    command, args = paths.kit_command("run-connector", recipe.id)
+    entry = {"command": python or command, "args": args if python is None else ["-m", "aitk", "run-connector", recipe.id]}
     custom_home = os.environ.get(paths.ENV_HOME, "").strip()
     env = {}
     if custom_home:

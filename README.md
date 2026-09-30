@@ -7,6 +7,21 @@ trading ideas with pretend money.** Read-only by design. Nothing in this kit can
 ![License: MIT](https://img.shields.io/badge/license-MIT-green)
 ![Real orders: none](https://img.shields.io/badge/real%20orders-none%2C%20by%20design-red)
 
+**No Python needed:** download the one-file build for your system from the
+[latest release](https://github.com/Dimas-100/ai-trading-kit/releases/latest) (`aitk-windows.exe`,
+`aitk-macos`, `aitk-linux`), put it somewhere you keep programs, and run it from a terminal:
+
+```
+aitk-windows.exe          # Windows (rename it to aitk.exe if you like)
+chmod +x aitk-macos && ./aitk-macos      # macOS: also allow it once under System Settings > Privacy & Security
+chmod +x aitk-linux && ./aitk-linux
+```
+
+The builds are not code-signed, so Windows SmartScreen and macOS Gatekeeper warn the first time; choose
+"run anyway". If you would rather not trust an unsigned program, use the source install below.
+
+**From source** (Python 3.11 or newer):
+
 ```
 git clone https://github.com/Dimas-100/ai-trading-kit.git
 cd ai-trading-kit
@@ -14,8 +29,7 @@ start            # Windows: double-click start.bat, or run it
 ./start.sh       # macOS / Linux
 ```
 
-That installs the kit into its own folder and shows the path below. Every step is one command and
-one short lesson.
+Either way you land on the path below. Every step is one command and one short lesson.
 
 ## The path
 
@@ -166,6 +180,16 @@ time, then `aitk practice report` shows how you did against simply holding, with
 - Store a key in the repository or in an AI app's settings.
 - Use unofficial, password-scraping broker libraries.
 - Tell you what to buy. Every result comes with the cautions a careful person would want.
+
+## Building the one-file kit yourself
+
+```
+pip install -e . pyinstaller
+pyinstaller packaging/aitk.spec        # -> dist/aitk (dist/aitk.exe on Windows)
+```
+
+`.github/workflows/release.yml` does this for Windows, macOS and Linux on every `v*` tag and attaches
+the three files to the release.
 
 ## Manual install
 

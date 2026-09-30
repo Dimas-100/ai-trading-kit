@@ -107,7 +107,8 @@ def cmd_connect_lab(args, console: Console) -> int:
         console.fail(f"{app.name} cannot start a program on your computer, so it cannot use the lab. "
                      "Use Claude Desktop, Claude Code or Cursor for the lab.")
         return 1
-    entry = {"command": sys.executable, "args": ["-m", "aitk", "lab"]}
+    program, program_args = paths.kit_command("lab")
+    entry = {"command": program, "args": program_args}
     home = paths.home()
     import os
     if os.environ.get(paths.ENV_HOME):
