@@ -11,7 +11,7 @@ import os
 import shutil
 import sys
 
-from .. import paths, secrets
+from .. import paths, vault
 from . import guard as guard_mod
 from .recipes import READY, Recipe, RecipeError, get
 
@@ -79,7 +79,7 @@ def run(recipe_id: str, store=None, stdin=None, stdout=None, stderr=None) -> int
         recipe = get(recipe_id)
         if recipe.status != READY or not recipe.guarded:
             raise LaunchError(f"{recipe.name} is not started by the kit: it is added to your AI app by its address.")
-        store = store if store is not None else secrets.open_store()
+        store = store if store is not None else vault.open_store()
         values = collect_fields(recipe, store)
         the_guard = make_guard(recipe)
         if recipe.transport == "http":
@@ -87,7 +87,7 @@ def run(recipe_id: str, store=None, stdin=None, stdout=None, stderr=None) -> int
             return guard_mod.run_http(the_guard, recipe.url, headers, stdin, stdout, stderr)
         command = resolve_command(recipe)
         return guard_mod.run_stdio(the_guard, command, build_env(recipe, values), stdin, stdout, stderr)
-    except (LaunchError, RecipeError, secrets.SecretStoreError) as exc:
+    except (LaunchError, RecipeError, vault.SecretStoreError) as exc:
         stderr.write(f"ai-trading-kit: {exc}\n")
         return 2
 

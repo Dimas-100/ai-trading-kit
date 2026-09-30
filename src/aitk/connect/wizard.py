@@ -7,7 +7,7 @@ from __future__ import annotations
 import subprocess
 from dataclasses import dataclass
 
-from .. import secrets, state
+from .. import state, vault
 from ..ui import Choice, Console
 from . import apps as apps_mod
 from . import doctor, launcher
@@ -276,7 +276,7 @@ def run(console: Console, broker: str | None = None, app_id: str | None = None, 
     if not yes:
         console.pause()
 
-    store = store if store is not None else secrets.open_store()
+    store = store if store is not None else vault.open_store()
     collect_keys(console, recipe, store, ask_again=not yes)
     first_run(console, recipe, store, yes)
 

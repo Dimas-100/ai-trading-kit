@@ -10,7 +10,7 @@ edit AI app settings files by hand; the wizard backs them up and knows the forma
 - **No real orders, ever.** Do not add code that submits, changes or cancels an order at a broker.
   The only `Broker` here is the practice simulator. A pull request that adds an order path is
   declined regardless of how well gated it is; that is a different product.
-- **No keys in files.** Keys live in the vault through `aitk.secrets`. Never write one into a
+- **No keys in files.** Keys live in the vault through `aitk.vault`. Never write one into a
   recipe, a test, a settings file, a log, or a printed message. Tests assert this.
 - **Official connectors only.** A broker recipe may name only a connector published by the broker
   or an aggregator on its own documentation. No password-scraping libraries.

@@ -5,7 +5,7 @@ import argparse
 import json
 import sys
 
-from . import __version__, guide, lab, paths, practice, prices, secrets, state, strategies
+from . import __version__, guide, lab, paths, practice, prices, state, strategies, vault
 from .connect import apps as apps_mod
 from .connect import doctor, launcher, wizard
 from .connect.recipes import LISTED, READY, RecipeError, find, get, load_all
@@ -154,7 +154,7 @@ def cmd_check(args, console: Console) -> int:
     if not conns:
         console.say("No connections yet. Run: aitk connect")
         return 0
-    store = secrets.open_store()
+    store = vault.open_store()
     for c in conns:
         app = apps_mod.all_apps().get(c["app"])
         label = f"{c['broker']} in {app.name if app else c['app']}"
@@ -227,7 +227,7 @@ def cmd_apps(args, console: Console) -> int:
 
 def cmd_keys(args, console: Console) -> int:
     recipe = get(args.broker)
-    store = secrets.open_store()
+    store = vault.open_store()
     if args.forget:
         n = sum(1 for f in recipe.fields if store.delete(recipe.id, f.key))
         console.ok(f"Removed {n} stored value(s) for {recipe.name}.")
@@ -244,7 +244,7 @@ def cmd_approve(args, console: Console) -> int:
     if not recipe.first_run:
         console.say(f"{recipe.name} needs no one-time approval.")
         return 0
-    return 0 if wizard.run_first_run(console, recipe, secrets.open_store()) else 1
+    return 0 if wizard.run_first_run(console, recipe, vault.open_store()) else 1
 
 
 def cmd_run_connector(args, console: Console) -> int:
@@ -257,7 +257,7 @@ def cmd_lab(args, console: Console) -> int:
 
 
 def cmd_prices(args, console: Console) -> int:
-    store = secrets.open_store()
+    store = vault.open_store()
     if args.prices_cmd == "list":
         have = prices.downloaded()
         if not have:
@@ -571,7 +571,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 KNOWN_ERRORS = (lab.LabError, prices.PriceError, practice.PracticeError, strategies.StrategyError, RecipeError,
-                apps_mod.AppError, secrets.SecretStoreError, launcher.LaunchError, KeyError)
+                apps_mod.AppError, vault.SecretStoreError, launcher.LaunchError, KeyError)
 
 
 def main(argv=None, console: Console | None = None) -> int:
