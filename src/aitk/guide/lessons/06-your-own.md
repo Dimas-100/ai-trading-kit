@@ -8,7 +8,11 @@
     aitk backtest my_idea SPY                      # run it
     aitk sweep my_idea SPY period=20,50,100,200    # try settings, check on unseen history
 
-You can also ask your AI to write the file for you: it knows the template through the lab.
+**The easier way: describe it to your AI.** With the lab connected (step 3), say what you have in
+mind in plain words. Your AI gets the template, writes the file, and saves it into your strategies
+folder with `save_strategy`. Before anything is saved, the kit checks the code (a strategy may import
+only the engine's own pieces, nothing that touches files or the network) and test-runs it. Then the
+AI backtests it and reports, reality check included. `aitk strategy show NAME` prints what it wrote.
 
 ## The one rule of testing
 

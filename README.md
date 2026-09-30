@@ -96,6 +96,15 @@ connect, then ask `retirement-check` (am I on track?), `fees-check` (what am I p
 `monthly-checkin` (a look in the mirror) and `all-my-accounts` (several brokers in one view). No
 trading required, and no advice given: numbers first, then what they mean.
 
+## Describe an idea, get a strategy
+
+Once the lab is connected, the whole loop happens in conversation: say "buy when the price falls 5%
+below its 20-day high and sell after it recovers 5%", and your AI writes the strategy file, saves it
+into your strategies folder, backtests it on real prices and reports, reality check included. Before
+anything is saved the kit checks the code (a strategy may import only the engine's own pieces and
+nothing that touches files or the network) and test-runs it. `aitk strategy show NAME` prints what
+was written; it is an ordinary Python file you can edit.
+
 ## Your AI can guide the setup
 
 Once the lab is connected (step 3), you can ask your AI "where am I on the path?", "help me connect

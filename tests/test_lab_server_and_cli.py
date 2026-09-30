@@ -28,7 +28,7 @@ def test_lab_server_tools_and_backtest(home):
     # everything that changes state is practice-only, and says so through its annotation
     for t in tools:
         if not t["annotations"]["readOnlyHint"]:
-            assert t["name"].startswith("practice_") or t["name"] == "download_prices", t["name"]
+            assert t["name"].startswith("practice_") or t["name"] in ("download_prices", "save_strategy"), t["name"]
     err, out = call(server, "list_strategies")
     assert not err and {s["name"] for s in out["strategies"]} >= {"sma_cross", "rsi2", "donchian", "buy_hold"}
     err, out = call(server, "backtest", {"strategy": "sma_cross", "symbol": "spy", "years": 4, "show_trades": 3})

@@ -68,7 +68,17 @@ The kit edits three files at most: Claude Desktop's `claude_desktop_config.json`
 JSON file is written it is copied to `~/.ai-trading-kit/backups/`. Only the entry being added or
 removed changes; a file that is not valid JSON is left untouched and reported.
 
-## 6. Where the promise stops
+## 6. Strategy files an AI writes
+
+`save_strategy` lets an assistant write a Python file the kit will later run. Before a byte is written:
+the source is parsed and refused if it imports anything but `aitk.engine.indicators`, `aitk.engine.models`,
+`aitk.engine.strategy`, `math` or `statistics`; uses `open`, `exec`, `eval`, `__import__`, `getattr` and the
+like; or reaches for dunder attributes (`__class__`, `__subclasses__`, ...). It must register exactly the
+class named after the file. The file is then imported from a scratch copy and run through a short backtest
+on made-up prices; only if that succeeds is it saved. This is a fence against accidents and obvious
+misuse, not a sandbox: a person's own AI writes into a person's own folder on their own computer.
+
+## 7. Where the promise stops
 
 - A broker's own connector may change over time. `aitk check` re-tests the tool list at any moment.
 - The name rules are conservative, not perfect. A tool with a misleading name and no publisher

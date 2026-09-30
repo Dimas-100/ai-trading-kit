@@ -1,10 +1,16 @@
-# Help me write my own strategy
+# Turn my idea into a strategy
 
-I want to turn this idea into a strategy file: **[describe your idea in plain words]**
+I want to turn this idea into a strategy: **[describe your idea in plain words, for example "buy when
+the price falls 5% below its 20-day high and sell after it recovers 5%"]**
 
-1. Use list_strategies to see the existing ones and where my own files live.
-2. Write a strategy file in the same shape as the built-in ones: a class with `name`, `summary`,
-   `warmup()` and `on_bars(bars)` that returns a `Signal`. It must look only at the bars it is given.
-3. Tell me the exact file name and folder to save it in.
-4. After I save it, backtest it on SPY and on two other symbols.
-5. Tell me what the rule assumes about markets, and when it would be expected to fail.
+1. Restate the rule in one sentence so I can correct it. Ask me about anything unclear: when to buy,
+   when to sell, and where the safety net (stop) goes.
+2. Get the template with strategy_template, write the file, and save it with save_strategy. Tell me
+   the name you gave it.
+3. Backtest it on SPY and on two other symbols with the backtest tool. If the prices are demo prices,
+   download real ones first.
+4. Report the return against buy and hold, the largest fall, the number of trades, and the reality
+   check, in plain words.
+5. Tell me what the rule assumes about markets and when it would be expected to fail.
+
+Do not present any result as a reason to trade with real money.

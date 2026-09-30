@@ -310,9 +310,13 @@ def cmd_strategies(args, console: Console) -> int:
 
 
 def cmd_strategy_new(args, console: Console) -> int:
+    if args.strategy_cmd == "show":
+        console.raw(strategies.read(args.name))
+        return 0
     path = strategies.create(args.name)
     console.ok(f"Created {path}")
     console.say("Open it, change the rule, then run: aitk backtest " + args.name + " SPY")
+    console.note("Or describe the idea to your AI: with the lab connected it can write and save the file itself.")
     return 0
 
 
@@ -548,8 +552,10 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("strategies", help="list strategies").set_defaults(func=cmd_strategies)
     c = sub.add_parser("strategy", help="create your own strategy file")
     ss = c.add_subparsers(dest="strategy_cmd", required=True)
-    n = ss.add_parser("new")
+    n = ss.add_parser("new", help="create a template file")
     n.add_argument("name")
+    sh = ss.add_parser("show", help="print one of your strategy files")
+    sh.add_argument("name")
     c.set_defaults(func=cmd_strategy_new)
 
     c = sub.add_parser("backtest", help="replay a strategy over history")

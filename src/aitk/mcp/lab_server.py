@@ -17,7 +17,9 @@ INSTRUCTIONS = (
     "the result rests on, and repeat the cautions in 'verdict'. If 'prices' says 'demo', offer download_prices "
     "or suggest 'aitk prices get SYMBOL'. Do not present any result as advice to buy or sell. When helping "
     "someone connect a broker, use setup_guide and check_connections; NEVER ask the person to paste an API key "
-    "or secret into the chat. Keys are typed only into the aitk wizard in their own terminal."
+    "or secret into the chat. Keys are typed only into the aitk wizard in their own terminal. When someone "
+    "describes a trading idea, turn it into a strategy file with strategy_template and save_strategy, then "
+    "backtest it and report honestly, including the reality check. Ask before overwriting a file."
 )
 
 
@@ -171,6 +173,21 @@ def build(book: prices.PriceBook | None = None) -> Server:
                             "fix": report.fix})
         return {"connections": results}
 
+    def strategy_template(args):
+        return {"template": strategies.template(str(args.get("name") or "my_idea")),
+                "rules": ["Keep the class's name attribute equal to the file name.",
+                          "Import only aitk.engine.indicators, aitk.engine.models, aitk.engine.strategy, math, "
+                          "statistics.",
+                          "on_bars sees ascending bars and answers for the newest bar only.",
+                          "Nothing that touches files, the network or the system is allowed; save_strategy "
+                          "refuses it."]}
+
+    def save_strategy(args):
+        return strategies.save(args["name"], args["code"], overwrite=bool(args.get("overwrite", False)))
+
+    def read_strategy(args):
+        return {"name": args["name"], "code": strategies.read(args["name"])}
+
     def practice_status(_args):
         return account.status().as_dict()
 
@@ -218,6 +235,16 @@ def build(book: prices.PriceBook | None = None) -> Server:
                   ["broker"]), setup_guide),
         Tool("check_connections", "Re-test every connection the person set up and say what works and what to fix. "
              "Can take a minute per broker.", _obj({}), check_connections),
+        Tool("strategy_template", "A starting file for a new strategy, plus the rules a strategy file must "
+             "follow. Use it before writing one.", _obj({"name": {"type": "string"}}), strategy_template),
+        Tool("save_strategy", "Write a strategy file into the person's strategies folder. The code is checked "
+             "(only engine imports, nothing that touches files or the network), test-run on made-up prices, "
+             "and only then saved. Returns what happened and the next command.",
+             _obj({"name": {"type": "string", "description": "lower case, letters, digits and _"},
+                   "code": {"type": "string", "description": "The whole Python file"},
+                   "overwrite": {"type": "boolean"}}, ["name", "code"]), save_strategy, read_only=False),
+        Tool("read_strategy", "Read one of the person's strategy files.", _obj({"name": {"type": "string"}}, ["name"]),
+             read_strategy),
         Tool("list_strategies", "List the trading strategies that can be tested, with their settings and a "
              "one-line description of each.", _obj({}), list_strategies),
         Tool("price_history", "Summarize the price history the kit has for a symbol: dates covered, high, low, "
