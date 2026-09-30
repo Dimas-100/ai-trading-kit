@@ -189,3 +189,20 @@ def test_guide_steps_and_lessons_exist():
         assert guide.lesson(s.id).startswith("# Step")
     assert guide.next_step() is not None or True
     assert len(guide.prompt_names()) >= 5
+
+
+def test_ask_secret_offers_visible_input_when_hidden_paste_fails(monkeypatch):
+    """A stand-in for a real terminal where the hidden prompt gets nothing, then visible input works."""
+    import sys as _sys
+    from aitk import ui
+    console = ScriptedConsole(["y", "pasted-secret"])
+    monkeypatch.setattr(console, "stdin", _sys.stdin)
+    monkeypatch.setattr(_sys.stdin, "isatty", lambda: True, raising=False)
+    monkeypatch.setattr(ui.getpass, "getpass", lambda prompt: "")
+    real_readline = console._readline
+
+    answers = iter(["y", "pasted-secret"])
+    monkeypatch.setattr(console, "_readline", lambda prompt: next(answers))
+    assert console.ask_secret("Secret") == "pasted-secret"
+    assert "cannot paste into a hidden prompt" in console.text
+    del real_readline

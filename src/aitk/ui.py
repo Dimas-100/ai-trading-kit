@@ -127,9 +127,11 @@ class Console:
             self.warn("This one is needed. Type q to stop.")
 
     def ask_secret(self, question: str) -> str:
-        """Hidden when a real terminal is attached; read plainly from a pipe (tests, automation)."""
+        """Hidden when a real terminal is attached; read plainly from a pipe (tests, automation).
+        Some Windows terminals drop a paste into a hidden prompt, so an empty answer offers visible input."""
+        hidden = self.stdin is sys.stdin and sys.stdin.isatty() and not os.environ.get("AITK_SHOW_SECRETS")
         while True:
-            if self.stdin is sys.stdin and sys.stdin.isatty():
+            if hidden:
                 try:
                     answer = getpass.getpass(f"{question} (hidden as you type): ")
                 except (KeyboardInterrupt, EOFError) as exc:
@@ -140,7 +142,13 @@ class Console:
             answer = answer.strip()
             if answer:
                 return answer
-            self.warn("Nothing was entered. Paste the value, then press Enter.")
+            if hidden:
+                self.warn("Nothing was entered. Some terminals cannot paste into a hidden prompt.")
+                if self.ask_yes_no("Show what you type for this one instead?", default=True):
+                    hidden = False
+                    self.note("Clear the screen afterwards if someone can see it (type cls or clear).")
+            else:
+                self.warn("Nothing was entered. Paste the value, then press Enter.")
 
     def ask_yes_no(self, question: str, default: bool = True) -> bool:
         hint = "Y/n" if default else "y/N"
