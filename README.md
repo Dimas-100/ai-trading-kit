@@ -31,6 +31,35 @@ one short lesson.
 Run `aitk` with no arguments any time to see where you are on the path. `aitk lesson 1` prints a
 step's lesson; `aitk check` re-tests every connection and says what to fix.
 
+## What it looks like
+
+A real run with a free Alpaca paper account, from the connection test to a question answered in Claude Desktop.
+
+`aitk check` starts the connector the way the AI app will and shows what the guard removed:
+
+![aitk check: Alpaca connected, 44 tools available, 1 removed](docs/images/shot-check.png)
+
+Then, in Claude Desktop:
+
+![Claude Desktop answering "What do I own right now" from the Alpaca paper account](docs/images/shot-claude-desktop.png)
+
+A backtest on real SPY prices, with buy-and-hold as the yardstick and the cautions spelled out:
+
+![aitk backtest rsi2 SPY](docs/images/shot-backtest.png)
+
+The practice account: place an order, move time forward, see what filled:
+
+![aitk practice: buy, next day, a protective stop, status](docs/images/shot-practice.png)
+
+<details>
+<summary>More: the home screen and the strategy comparison</summary>
+
+![aitk home screen: the six-step path](docs/images/shot-home.png)
+
+![aitk compare SPY: every strategy side by side](docs/images/shot-compare.png)
+
+</details>
+
 ## Who this is for
 
 - **Never traded, curious what an AI can tell you about your account.** Do steps 1 and 2. Stop there

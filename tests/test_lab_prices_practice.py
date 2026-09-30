@@ -219,3 +219,12 @@ def test_parse_settings_and_grid():
     assert strategies.parse_grid(["fast=10,20", "slow=50"]) == {"fast": [10, 20], "slow": [50]}
     with pytest.raises(strategies.StrategyError):
         strategies.parse_settings(["fast"])
+
+
+def test_contiguous_tail_drops_stray_early_bars():
+    from aitk.engine.models import Bar
+    stray = Bar("2018-11-01", 240.95, 240.95, 240.95, 240.95, 200)
+    real = [Bar(f"2020-07-{d:02d}", 1, 2, 0.5, 1.5, 1) for d in range(27, 31)]
+    assert prices.contiguous_tail([stray] + real) == real
+    assert prices.contiguous_tail(real) == real
+    assert prices.contiguous_tail([]) == []

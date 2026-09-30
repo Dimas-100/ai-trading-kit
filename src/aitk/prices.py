@@ -230,4 +230,23 @@ def download(symbol: str, store, provider: str | None = None, years: int = 20, t
             unique.append(b)
     if not unique:
         raise PriceError(f"{PROVIDERS[provider]['name']} returned no prices for {symbol}")
+    unique = contiguous_tail(unique)
     return write_csv(symbol, unique), len(unique), provider
+
+
+MAX_GAP_DAYS = 45
+
+
+def contiguous_tail(bars: list[Bar]) -> list[Bar]:
+    """Drop stray early bars that sit before a long hole in the history (a provider's free feed
+    sometimes returns one odd bar years before its real coverage begins). A backtest that starts on such
+    a bar would compare against a buy-and-hold figure nobody could have earned."""
+    cut = 0
+    for i in range(1, len(bars)):
+        try:
+            gap = (date.fromisoformat(bars[i].ts[:10]) - date.fromisoformat(bars[i - 1].ts[:10])).days
+        except ValueError:
+            continue
+        if gap > MAX_GAP_DAYS:
+            cut = i
+    return bars[cut:]
