@@ -12,8 +12,13 @@ ENV_HOME = "AITK_HOME"
 
 
 def home() -> Path:
+    """AITK_HOME if set; else the enclosing project folder (see aitk.project); else ~/.ai-trading-kit."""
     raw = os.environ.get(ENV_HOME, "").strip()
-    return Path(raw).expanduser() if raw else Path.home() / ".ai-trading-kit"
+    if raw:
+        return Path(raw).expanduser()
+    from . import project
+    found = project.find()
+    return found if found is not None else Path.home() / ".ai-trading-kit"
 
 
 def kit_command(*args: str) -> tuple[str, list[str]]:

@@ -41,6 +41,7 @@ Either way you land on the path below. Every step is one command and one short l
 | 4. Test | See how a rule would have done, against just buying and holding. | `aitk backtest sma_cross SPY` |
 | 5. Practice | Place orders, move time forward, see what fills. No real money anywhere. | `aitk practice start` |
 | 6. Your own | Write a strategy, try many settings, check it on history it never saw. | `aitk strategy new my_idea` |
+| 7. Project | One folder with your plan, your journal, your strategies and a git history. | `aitk init my-trading` |
 
 Run `aitk` with no arguments any time to see where you are on the path. `aitk lesson 1` prints a
 step's lesson; `aitk check` re-tests every connection and says what to fix.
@@ -73,7 +74,7 @@ The practice account: place an order, move time forward, see what filled:
 <details>
 <summary>More: the home screen and the strategy comparison</summary>
 
-![aitk home screen: the six-step path](docs/images/shot-home.png)
+![aitk home screen: the path](docs/images/shot-home.png)
 
 ![aitk compare SPY: every strategy side by side](docs/images/shot-compare.png)
 
@@ -104,6 +105,14 @@ into your strategies folder, backtests it on real prices and reports, reality ch
 anything is saved the kit checks the code (a strategy may import only the engine's own pieces and
 nothing that touches files or the network) and test-runs it. `aitk strategy show NAME` prints what
 was written; it is an ordinary Python file you can edit.
+
+## Make it a project
+
+`aitk init my-trading` creates a folder that is yours: `plan.md` (the rules you trade by), `journal.md`
+(why you did what you did, which your AI can write for you), `strategies/`, an `AGENTS.md` that tells any
+AI opened there how to behave, and a first git commit. Run `aitk` anywhere inside it and the kit uses it
+as home, so the practice account and prices live there too. It is the shape of a serious hobbyist's
+setup, ready on day one.
 
 ## Your AI can guide the setup
 
@@ -230,7 +239,7 @@ src/aitk/
   practice.py            the pretend-money account with its own calendar
   prices.py              price files, demo prices, downloads (Tiingo, Alpaca)
   mcp/                   a small MCP implementation (server + client) and the lab server
-  guide/                 the six steps, their lessons and the prompt library
+  guide/                 the seven steps, their lessons and the prompt library
 tests/                   no network, a fake broker connector, every adapter against a temp home
 docs/                    design, safety model, how to add a broker
 ```

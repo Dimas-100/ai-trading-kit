@@ -5,7 +5,7 @@ import argparse
 import json
 import sys
 
-from . import __version__, guide, lab, paths, practice, prices, state, strategies, vault
+from . import __version__, guide, lab, paths, practice, prices, project, state, strategies, vault
 from .connect import apps as apps_mod
 from .connect import doctor, launcher, wizard
 from .connect.recipes import LISTED, READY, RecipeError, find, get, load_all
@@ -63,8 +63,25 @@ def _bars_for(console: Console, book: prices.PriceBook, symbol: str, years: floa
 
 
 # ── commands ──────────────────────────────────────────────────────────────────
+def cmd_init(args, console: Console) -> int:
+    out = project.create(args.name, here=args.here, git=not args.no_git)
+    console.ok(f"Project created: {out['folder']}")
+    console.say("Inside it: plan.md (your rules), journal.md (your reasons), strategies/ (your files), "
+                "AGENTS.md (for your AI)." + ("  First git commit made." if out["git"] else ""))
+    console.write()
+    console.say("Next:")
+    console.steps([f"cd {args.name if not args.here else '.'}",
+                   "aitk connect-lab   (so your AI's practice account and prices live in this folder)",
+                   "Open plan.md and fill in the rule you want to test."])
+    state.mark_done("project")
+    return 0
+
+
 def cmd_home(args, console: Console) -> int:
     console.title("ai-trading-kit")
+    here = project.find()
+    if here is not None:
+        console.note(f"Project: {here}")
     console.say("Connect your broker to your AI, then learn to test and practice ideas with pretend money. "
                 "Nothing here places a real order.")
     rows = guide.steps()
@@ -111,8 +128,8 @@ def cmd_connect_lab(args, console: Console) -> int:
     entry = {"command": program, "args": program_args}
     home = paths.home()
     import os
-    if os.environ.get(paths.ENV_HOME):
-        entry["env"] = {paths.ENV_HOME: str(home)}
+    if os.environ.get(paths.ENV_HOME) or project.find() is not None:
+        entry["env"] = {paths.ENV_HOME: str(home)}      # an AI app starts the lab from anywhere: pin the folder
     preview = app.preview(LAB_NAME, entry)
     if preview:
         console.say("This is what will be added:")
@@ -612,6 +629,11 @@ def build_parser() -> argparse.ArgumentParser:
     c.add_argument("name", nargs="?")
     c.set_defaults(func=cmd_prompts)
     sub.add_parser("where", help="the folders the kit uses").set_defaults(func=cmd_where)
+    c = sub.add_parser("init", help="create your own project folder (plan, journal, strategies, git)")
+    c.add_argument("name")
+    c.add_argument("--here", action="store_true", help="use the current folder instead of creating one")
+    c.add_argument("--no-git", action="store_true")
+    c.set_defaults(func=cmd_init)
     c = sub.add_parser("lesson", help="read a step's lesson")
     c.add_argument("step")
     c.set_defaults(func=cmd_lesson)
@@ -619,6 +641,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 KNOWN_ERRORS = (lab.LabError, prices.PriceError, practice.PracticeError, strategies.StrategyError, RecipeError,
+                project.ProjectError,
                 apps_mod.AppError, vault.SecretStoreError, launcher.LaunchError, KeyError)
 
 

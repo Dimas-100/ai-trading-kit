@@ -4,7 +4,7 @@ It gives the assistant tools to test ideas on history and to trade a practice ac
 works on made-up money or on price files on this computer. None can reach a real account."""
 from __future__ import annotations
 
-from .. import __version__, guide, lab, paths, practice, prices, state, strategies, vault
+from .. import __version__, guide, lab, paths, practice, prices, project, state, strategies, vault
 from ..connect import apps as apps_mod
 from ..connect import doctor
 from ..connect.recipes import READY, find, load_all
@@ -19,7 +19,8 @@ INSTRUCTIONS = (
     "someone connect a broker, use setup_guide and check_connections; NEVER ask the person to paste an API key "
     "or secret into the chat. Keys are typed only into the aitk wizard in their own terminal. When someone "
     "describes a trading idea, turn it into a strategy file with strategy_template and save_strategy, then "
-    "backtest it and report honestly, including the reality check. Ask before overwriting a file."
+    "backtest it and report honestly, including the reality check. Ask before overwriting a file. If a project "
+    "folder exists (where_am_i says so), read_notes before advising and journal_add when a decision is made."
 )
 
 
@@ -112,11 +113,30 @@ def build(book: prices.PriceBook | None = None) -> Server:
     def where_am_i(_args):
         rows = guide.steps()
         nxt = guide.next_step()
+        folder = paths.home()
+        is_project = (folder / project.MARKER).is_file()
         return {"steps": [{"number": r["step"].number, "title": r["step"].title, "done": r["done"],
                            "command": r["step"].command} for r in rows],
                 "next": None if nxt is None else {"number": nxt.number, "title": nxt.title, "command": nxt.command},
                 "connections": state.load()["connections"],
-                "price_files": prices.downloaded(), "home_folder": str(paths.home())}
+                "price_files": prices.downloaded(), "home_folder": str(folder),
+                "project": {"is_project": is_project,
+                            "note": "This is the person's own project folder: plan.md, journal.md, strategies/."
+                            if is_project else "No project folder yet. `aitk init my-trading` creates one."}}
+
+    def journal_add(args):
+        folder = paths.home()
+        if not (folder / project.MARKER).is_file():
+            raise ToolError("there is no project folder to write the journal in. Ask the person to run "
+                            "'aitk init my-trading' and to reconnect the lab from inside it.")
+        path = project.journal_add(folder, args["text"], str(args.get("title") or ""))
+        return {"added_to": str(path), "note": "Entry written with today's date."}
+
+    def read_notes(args):
+        folder = paths.home()
+        if not (folder / project.MARKER).is_file():
+            raise ToolError("there is no project folder. Ask the person to run 'aitk init my-trading'.")
+        return project.read_notes(folder, int(args.get("entries", 5)))
 
     def list_brokers(args):
         query = str(args.get("query") or "").strip()
@@ -225,6 +245,13 @@ def build(book: prices.PriceBook | None = None) -> Server:
     tools = [
         Tool("where_am_i", "Where the person is on the kit's six-step path, which connections exist, which price "
              "files are on disk, and the next command to suggest.", _obj({}), where_am_i),
+        Tool("journal_add", "Add a dated entry to the person's journal.md: what was decided, why, and what would "
+             "change their mind. Use it whenever they make or explain a decision.",
+             _obj({"text": {"type": "string"}, "title": {"type": "string"}}, ["text"]), journal_add,
+             read_only=False),
+        Tool("read_notes", "The person's plan.md (the rules they trade by) and their most recent journal entries. "
+             "Read the plan before suggesting a trade or a change.",
+             _obj({"entries": {"type": "integer"}}), read_notes),
         Tool("list_brokers", "The brokers the kit can connect, how much effort each takes and how each is kept "
              "read-only. Give a query to look one up by name (for example 'fidelity').",
              _obj({"query": {"type": "string"}}), list_brokers),

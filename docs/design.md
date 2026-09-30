@@ -28,10 +28,10 @@ statistics of backtesting.
 
 ## The stages beyond this release
 
-The path has six steps. Steps 1 to 6 ship. Two possible later stages were deliberately left out:
+The path has seven steps, all of which ship (step 7, the project folder, was added on 2026-09-30). Two possible later stages were deliberately left out:
 live orders behind rails (dry-run, caps, typed confirmation) and scheduled automation with a
 watchdog and kill switch. Each would need its own design and security review, and a person should
-have finished the six steps before either is offered.
+have finished the path before either is offered.
 
 ## Components
 

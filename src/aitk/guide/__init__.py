@@ -1,4 +1,4 @@
-"""The path: six steps from nothing to a tested idea, each with one command and one short lesson.
+"""The path: seven steps from nothing to a project of your own, each with one command and one short lesson.
 
 Lessons and prompts are plain Markdown files so anyone can read or improve them without Python."""
 from __future__ import annotations
@@ -39,6 +39,9 @@ STEPS = (
     Step("own", 6, "Write and stress-test your own idea",
          "Create a strategy, try many settings, and check it on history it never saw.",
          "aitk strategy new my_idea", "06-your-own", "advanced"),
+    Step("project", 7, "Make it a project",
+         "One folder with your plan, your journal, your strategies and a git history.",
+         "aitk init my-trading", "07-project", "advanced"),
 )
 
 
