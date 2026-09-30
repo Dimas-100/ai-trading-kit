@@ -194,6 +194,7 @@ def test_guide_steps_and_lessons_exist():
 def test_ask_secret_offers_visible_input_when_hidden_paste_fails(monkeypatch):
     """A stand-in for a real terminal where the hidden prompt gets nothing, then visible input works."""
     import sys as _sys
+
     from aitk import ui
     console = ScriptedConsole(["y", "pasted-secret"])
     monkeypatch.setattr(console, "stdin", _sys.stdin)
