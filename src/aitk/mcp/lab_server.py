@@ -4,7 +4,7 @@ It gives the assistant tools to test ideas on history and to trade a practice ac
 works on made-up money or on price files on this computer. None can reach a real account."""
 from __future__ import annotations
 
-from .. import __version__, lab, paths, practice, prices, strategies
+from .. import __version__, lab, paths, practice, prices, strategies, vault
 from .protocol import Server, Tool, ToolError
 
 INSTRUCTIONS = (
@@ -89,6 +89,20 @@ def build(book: prices.PriceBook | None = None) -> Server:
         out["rows"] = out["rows"][:int(args.get("show", 10))]
         return out
 
+    def download_prices(args):
+        store = vault.open_store()
+        provider = prices.available_provider(store)
+        if provider is None:
+            raise ToolError("no price provider key is stored. Ask the person to run 'aitk prices key' once "
+                            "(Tiingo or Alpaca, both free), then try again.")
+        out = []
+        for symbol in args["symbols"]:
+            path, n, used = prices.download(symbol, store, years=int(args.get("years", 20)))
+            out.append({"symbol": prices.clean_symbol(symbol), "days": n, "from": prices.PROVIDERS[used]["name"],
+                        "first": book.all_bars(symbol)[0].ts, "last": book.all_bars(symbol)[-1].ts})
+        return {"downloaded": out, "note": "Real daily prices, adjusted for splits and dividends, kept on this "
+                                          "computer. Backtests on these symbols now use them."}
+
     def practice_status(_args):
         return account.status().as_dict()
 
@@ -141,6 +155,11 @@ def build(book: prices.PriceBook | None = None) -> Server:
                                                                  "{\"fast\": [10, 20], \"slow\": [50, 100]}"},
                    "first_part": {"type": "number", "description": "Share of history used for choosing (0.3-0.9)"},
                    "show": {"type": "integer"}}, ["strategy", "symbol", "settings"]), try_settings),
+        Tool("download_prices", "Download real daily price history for symbols with the person's own free "
+             "provider key (Tiingo or Alpaca), so backtests stop using demo prices. Says if no key is stored.",
+             _obj({"symbols": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+                   "years": {"type": "integer", "description": "How many years back (default 20)"}}, ["symbols"]),
+             download_prices, read_only=False),
         Tool("practice_status", "Show the practice account: its date, cash, positions and open orders. Pretend "
              "money only.", _obj({}), practice_status),
         Tool("practice_start", "Open a practice account with pretend money, starting on a date in the past.",

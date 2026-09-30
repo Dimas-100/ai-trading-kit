@@ -28,7 +28,7 @@ def test_lab_server_tools_and_backtest(home):
     # everything that changes state is practice-only, and says so through its annotation
     for t in tools:
         if not t["annotations"]["readOnlyHint"]:
-            assert t["name"].startswith("practice_"), t["name"]
+            assert t["name"].startswith("practice_") or t["name"] == "download_prices", t["name"]
     err, out = call(server, "list_strategies")
     assert not err and {s["name"] for s in out["strategies"]} >= {"sma_cross", "rsi2", "donchian", "buy_hold"}
     err, out = call(server, "backtest", {"strategy": "sma_cross", "symbol": "spy", "years": 4, "show_trades": 3})
@@ -207,3 +207,9 @@ def test_ask_secret_offers_visible_input_when_hidden_paste_fails(monkeypatch):
     assert console.ask_secret("Secret") == "pasted-secret"
     assert "cannot paste into a hidden prompt" in console.text
     del real_readline
+
+
+def test_lab_server_download_prices_without_a_key(home):
+    server = build()
+    err, out = call(server, "download_prices", {"symbols": ["SPY"]})
+    assert err and "aitk prices key" in out

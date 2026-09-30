@@ -111,7 +111,7 @@ home folder as one Python file each (`aitk strategy new NAME` writes a template)
 ## What this kit refuses to do
 
 - Place, change or cancel a real order. There is no code path for it, and the tests check that the
-  lab's only state-changing tools are the practice ones.
+  lab's only state-changing tools are the practice ones and the price download.
 - Store a key in the repository or in an AI app's settings.
 - Use unofficial, password-scraping broker libraries.
 - Tell you what to buy. Every result comes with the cautions a careful person would want.
