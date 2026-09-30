@@ -23,6 +23,18 @@ class PracticeError(ValueError):
     pass
 
 
+# Starting points worth living through. Each is a date the practice calendar can begin on and one line
+# about why. They need real prices covering the date (demo prices cover none of them by design).
+SCENARIOS = {
+    "2020-crash": ("2020-02-19", "The fastest 30% fall in history, then a recovery nobody believed. "
+                                 "Five weeks decide everything."),
+    "2022-bear": ("2022-01-03", "A slow grind down all year with sharp rallies that fooled people into buying "
+                                "the dip. Patience is tested for months."),
+    "2023-rally": ("2023-01-03", "After a bad year, a strong one. The test is whether fear kept you out."),
+    "2025-tariffs": ("2025-03-03", "A sudden drop on policy news and a fast bounce. Whipsaw practice."),
+}
+
+
 def _clock_file():
     return paths.paper_file().with_name("clock.json")
 
@@ -81,13 +93,23 @@ class Practice:
 
     # ── lifecycle ─────────────────────────────────────────────────────────────
     def start(self, cash: float = DEFAULT_CASH, start: str | None = None, calendar: str = CALENDAR_SYMBOL,
-              replace: bool = False) -> Status:
+              replace: bool = False, scenario: str | None = None) -> Status:
         if self.exists() and not replace:
             raise PracticeError("a practice account already exists. To start over: aitk practice start --reset")
         if cash <= 0:
             raise PracticeError("the starting cash must be more than zero")
         calendar = prices.clean_symbol(calendar)
+        if scenario:
+            if scenario not in SCENARIOS:
+                raise PracticeError(f"no scenario called '{scenario}'. Choose from: {', '.join(SCENARIOS)}")
+            if self.book.kind(calendar) == prices.DEMO:
+                raise PracticeError(f"scenarios need real prices for {calendar}. Run: aitk prices get {calendar}")
+            start = SCENARIOS[scenario][0]
         days = [b.ts for b in self.book.all_bars(calendar)]
+        if scenario and start < days[0]:
+            raise PracticeError(f"the {calendar} prices on this computer start on {days[0]}, after the "
+                                f"'{scenario}' scenario begins. Download a longer history (Tiingo goes back "
+                                "decades): aitk prices key tiingo, then aitk prices get " + calendar)
         if len(days) < 300:
             raise PracticeError(f"{calendar} has too little history to practice on")
         if start is None:
@@ -100,7 +122,8 @@ class Practice:
         for f in (paths.paper_file(), _clock_file()):
             if f.exists():
                 f.unlink()
-        self._save_clock({"today": today, "started_with": float(cash), "calendar": calendar, "started_on": today})
+        self._save_clock({"today": today, "started_with": float(cash), "calendar": calendar, "started_on": today,
+                          "scenario": scenario or ""})
         broker = self._broker(cash)
         broker.sync(as_of=today)
         return self.status()
@@ -189,3 +212,48 @@ class Practice:
     def history(self) -> list[dict]:
         self._clock()
         return list(self._broker().state_view().get("fills", []))
+
+    # ── the report card ───────────────────────────────────────────────────────
+    def report(self) -> dict:
+        """How the account did since it started, against simply holding the calendar symbol for the same days."""
+        clock = self._clock()
+        status = self.status()
+        calendar = clock.get("calendar", CALENDAR_SYMBOL)
+        bars = self.book.all_bars(calendar)
+        by_ts = {b.ts: b.close for b in bars}
+        start_close, today_close = by_ts.get(clock["started_on"]), by_ts.get(clock["today"])
+        hold_pct = ((today_close / start_close - 1) * 100) if start_close and today_close else 0.0
+        fills = self.history()
+        days_lived = sum(1 for b in bars if clock["started_on"] < b.ts <= clock["today"])
+        realized, lots = 0.0, {}
+        for f in fills:
+            lot = lots.setdefault(f["symbol"], [0, 0.0])
+            if f["side"] == "BUY":
+                lot[1] = (lot[0] * lot[1] + f["quantity"] * f["price"]) / (lot[0] + f["quantity"])
+                lot[0] += f["quantity"]
+            else:
+                realized += f["quantity"] * (f["price"] - lot[1])
+                lot[0] -= f["quantity"]
+        verdict = []
+        you = status.change_pct
+        if days_lived == 0:
+            verdict.append("Time has not moved yet. Place an order, then move a day forward.")
+        elif not fills:
+            verdict.append(f"You placed no orders that filled, so you sat in cash while holding {calendar} would have "
+                           f"made {hold_pct:+.1f}%.")
+        elif you > hold_pct:
+            verdict.append(f"You made {you:+.1f}% against {hold_pct:+.1f}% for simply holding {calendar}. Ask whether "
+                           "it was the rule or the luck; do it again from another date before believing it.")
+        else:
+            verdict.append(f"You made {you:+.1f}% while simply holding {calendar} made {hold_pct:+.1f}%. Most active "
+                           "traders land here. The honest question is what the trades bought you: less worry, or more?")
+        if fills:
+            verdict.append(f"{len(fills)} fills over {days_lived} trading days, {realized:+,.0f} dollars realized on "
+                           f"closed lots, {len(status.positions)} position(s) still open.")
+        scenario = clock.get("scenario") or ""
+        return {"scenario": scenario, "scenario_note": SCENARIOS.get(scenario, ("", ""))[1],
+                "started_on": clock["started_on"], "today": clock["today"], "trading_days": days_lived,
+                "started_with": clock["started_with"], "account_value": round(status.value, 2),
+                "you_pct": round(you, 2), "hold_pct": round(hold_pct, 2), "hold_symbol": calendar,
+                "fills": len(fills), "realized": round(realized, 2), "open_positions": len(status.positions),
+                "verdict": verdict, "note": "Practice money only."}

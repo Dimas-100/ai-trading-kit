@@ -23,6 +23,15 @@ tomorrow's prices, the way a real one would. A month of decisions takes ten minu
 | `aitk practice sell SPY 5 --stop 380` | Sell if the price falls to 380. A safety net under a position. |
 | add `--keep-open` | Keep the order until it fills or you cancel it. Otherwise it expires after a day. |
 
+## Live through a hard year
+
+    aitk practice scenarios                       # a crash, a bear market, a rally, a whipsaw
+    aitk practice start --scenario 2022-bear      # needs real prices: aitk prices get SPY
+    aitk practice report                          # you against simply holding, with a verdict
+
+Nobody learns what a 25% fall feels like from a chart. Starting in January 2022 and moving a week at a
+time, deciding each time, is the closest thing to it without money at risk.
+
 ## What to practice
 
 Before you buy, write down what would make you sell. Then move time forward and see whether you

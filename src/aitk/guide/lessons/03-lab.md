@@ -11,6 +11,12 @@ It can replay a strategy over years of prices, compare strategies, try many sett
 practice account. It works only on pretend money and on price files on your computer. It has no
 connection to your broker and cannot reach real money.
 
+## It can guide setup too
+
+The lab knows the kit's path. Ask "where am I on the path?" or "help me connect Fidelity" and it will
+explain what is possible, hand you the exact command, and re-test your connections. It will never ask
+you to paste a key into the chat; keys are typed only into the wizard in your own terminal.
+
 ## Try saying
 
 - "List the strategies you can test and explain each in one sentence."

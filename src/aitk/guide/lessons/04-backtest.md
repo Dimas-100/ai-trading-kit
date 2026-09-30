@@ -20,6 +20,12 @@
 | win_rate_pct | Share of trades that made money. High is not the same as profitable. |
 | exposure_pct | Share of days the money was in the market. |
 
+## The reality check
+
+Below the table, the verdict says what you would have lived through: the longest stretch below a
+previous peak, the worst run of losing trades, and the biggest single loss in dollars. Those three
+numbers end more strategies than bad returns do. Read them as "would I really have kept going?"
+
 ## What a backtest cannot show
 
 It assumes every order fills, ignores taxes, and knows nothing about tomorrow. A rule that looks good

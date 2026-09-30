@@ -6,6 +6,11 @@ your real numbers in front of it.
 **Do it:** `aitk prompts` to list them, `aitk prompts portfolio-review` to print one. Paste it into
 your AI app.
 
+## Not a trader? Start with these
+
+`retirement-check`, `fees-check` and `monthly-checkin` are for anyone with an account, whether or not
+they ever place a trade. `all-my-accounts` combines several connected brokers into one picture.
+
 ## Why start here
 
 Most people who want to trade better do not need a strategy first. They need to see what they already

@@ -4,16 +4,20 @@ It gives the assistant tools to test ideas on history and to trade a practice ac
 works on made-up money or on price files on this computer. None can reach a real account."""
 from __future__ import annotations
 
-from .. import __version__, lab, paths, practice, prices, strategies, vault
+from .. import __version__, guide, lab, paths, practice, prices, state, strategies, vault
+from ..connect import apps as apps_mod
+from ..connect import doctor
+from ..connect.recipes import READY, find, load_all
 from .protocol import Server, Tool, ToolError
 
 INSTRUCTIONS = (
-    "These tools are a practice lab. Everything uses pretend money and price history stored on the person's "
-    "computer; nothing here can reach a real brokerage account. When you report a backtest, always give the "
-    "buy-and-hold comparison and the largest drop alongside the return, mention how many trades the result "
-    "rests on, and repeat the cautions in 'verdict'. If 'prices' says 'demo', tell the person the prices are "
-    "made up and suggest 'aitk prices get SYMBOL' for real history. Do not present any result as advice to "
-    "buy or sell."
+    "These tools are a practice lab and a setup guide. Everything uses pretend money and price history stored "
+    "on the person's computer; nothing here can reach a real brokerage account. When you report a backtest, "
+    "always give the buy-and-hold comparison and the largest drop alongside the return, mention how many trades "
+    "the result rests on, and repeat the cautions in 'verdict'. If 'prices' says 'demo', offer download_prices "
+    "or suggest 'aitk prices get SYMBOL'. Do not present any result as advice to buy or sell. When helping "
+    "someone connect a broker, use setup_guide and check_connections; NEVER ask the person to paste an API key "
+    "or secret into the chat. Keys are typed only into the aitk wizard in their own terminal."
 )
 
 
@@ -103,12 +107,77 @@ def build(book: prices.PriceBook | None = None) -> Server:
         return {"downloaded": out, "note": "Real daily prices, adjusted for splits and dividends, kept on this "
                                           "computer. Backtests on these symbols now use them."}
 
+    def where_am_i(_args):
+        rows = guide.steps()
+        nxt = guide.next_step()
+        return {"steps": [{"number": r["step"].number, "title": r["step"].title, "done": r["done"],
+                           "command": r["step"].command} for r in rows],
+                "next": None if nxt is None else {"number": nxt.number, "title": nxt.title, "command": nxt.command},
+                "connections": state.load()["connections"],
+                "price_files": prices.downloaded(), "home_folder": str(paths.home())}
+
+    def list_brokers(args):
+        query = str(args.get("query") or "").strip()
+        recipes = find(query) if query else list(load_all().values())
+        rows = []
+        for r in recipes:
+            rows.append({"id": r.id, "name": r.name, "ready": r.status == READY, "effort": r.difficulty,
+                         "read_only": r.read_only, "read_only_note": r.read_only_note, "summary": r.summary,
+                         "assets": list(r.assets), "warning": r.warning, "advice": r.advice,
+                         "platforms": list(r.platforms), "docs": r.docs_url})
+        if query and not rows:
+            return {"brokers": [], "note": f"No recipe matches '{query}'. The broker may offer no official "
+                                          "connector; SnapTrade reads many brokers without being able to trade."}
+        return {"brokers": rows}
+
+    def setup_guide(args):
+        broker_id = str(args.get("broker") or "").strip().lower()
+        hits = [r for r in find(broker_id) if r.id == broker_id] or find(broker_id)
+        if not hits:
+            raise ToolError(f"no broker called '{broker_id}'. Use list_brokers first.")
+        r = hits[0]
+        app_id = str(args.get("app") or "").strip().lower()
+        apps = apps_mod.all_apps()
+        app_line = f" --app {app_id}" if app_id in apps else ""
+        if r.status != READY:
+            return {"broker": r.name, "ready": False, "advice": r.advice, "docs": r.docs_url}
+        out = {"broker": r.name, "ready": True, "read_only": r.read_only, "read_only_note": r.read_only_note,
+               "warning": r.warning, "steps_at_the_broker": list(r.access_steps),
+               "then_run_in_a_terminal": f"aitk connect --broker {r.id}{app_line}",
+               "the_wizard_will_ask_for": [f.label for f in r.fields],
+               "programs_needed": list(r.needs), "one_time_step": r.first_run_note, "docs": r.docs_url,
+               "rule": "Never paste a key or secret into this chat. Type it into the wizard in your own terminal; "
+                       "it is stored in your computer's password vault."}
+        if app_id == "chatgpt" and r.guarded:
+            out["note"] = "ChatGPT cannot use this broker: it can only use brokers you sign in to."
+        return out
+
+    def check_connections(_args):
+        conns = state.load()["connections"]
+        if not conns:
+            return {"connections": [], "note": "No connections yet. Use setup_guide to get started."}
+        store = vault.open_store()
+        results = []
+        for c in conns:
+            if c["broker"] == "lab":
+                results.append({"broker": "lab", "app": c["app"], "ok": True, "message": "The practice lab is this."})
+                continue
+            recipe = load_all().get(c["broker"])
+            if recipe is None:
+                continue
+            report = doctor.check_connection(recipe, store)
+            results.append({"broker": c["broker"], "app": c["app"], "ok": report.ok, "message": report.message,
+                            "tools_available": len(report.kept), "tools_removed": [n for n, _ in report.removed],
+                            "fix": report.fix})
+        return {"connections": results}
+
     def practice_status(_args):
         return account.status().as_dict()
 
     def practice_start(args):
         return account.start(cash=float(args.get("cash", practice.DEFAULT_CASH)), start=args.get("start_date"),
-                             replace=bool(args.get("start_over", False))).as_dict()
+                             replace=bool(args.get("start_over", False)),
+                             scenario=args.get("scenario") or None).as_dict()
 
     def practice_order(args):
         return account.order(args["side"], args["symbol"], args["shares"], limit=args.get("limit_price"),
@@ -126,9 +195,29 @@ def build(book: prices.PriceBook | None = None) -> Server:
     def practice_history(_args):
         return {"fills": account.history()}
 
+    def practice_report(_args):
+        return account.report()
+
+    def practice_scenarios(_args):
+        return {"scenarios": [{"name": k, "starts": v[0], "why": v[1]} for k, v in practice.SCENARIOS.items()],
+                "how": "practice_start with scenario=<name>. Needs real prices (download_prices SPY).",
+                "prices": account.book.kind(practice.CALENDAR_SYMBOL)}
+
     sym = {"type": "string", "description": "Ticker symbol, for example SPY"}
     years = {"type": "number", "description": "Use only the most recent N years (default: all history)"}
     tools = [
+        Tool("where_am_i", "Where the person is on the kit's six-step path, which connections exist, which price "
+             "files are on disk, and the next command to suggest.", _obj({}), where_am_i),
+        Tool("list_brokers", "The brokers the kit can connect, how much effort each takes and how each is kept "
+             "read-only. Give a query to look one up by name (for example 'fidelity').",
+             _obj({"query": {"type": "string"}}), list_brokers),
+        Tool("setup_guide", "The exact steps to connect a broker: what to do at the broker's site, the command to "
+             "run in a terminal, and what the wizard will ask. Never ask for keys in the chat.",
+             _obj({"broker": {"type": "string", "description": "Broker id from list_brokers, e.g. alpaca"},
+                   "app": {"type": "string", "enum": ["claude-desktop", "claude-code", "cursor", "chatgpt"]}},
+                  ["broker"]), setup_guide),
+        Tool("check_connections", "Re-test every connection the person set up and say what works and what to fix. "
+             "Can take a minute per broker.", _obj({}), check_connections),
         Tool("list_strategies", "List the trading strategies that can be tested, with their settings and a "
              "one-line description of each.", _obj({}), list_strategies),
         Tool("price_history", "Summarize the price history the kit has for a symbol: dates covered, high, low, "
@@ -164,7 +253,8 @@ def build(book: prices.PriceBook | None = None) -> Server:
              "money only.", _obj({}), practice_status),
         Tool("practice_start", "Open a practice account with pretend money, starting on a date in the past.",
              _obj({"cash": {"type": "number"}, "start_date": {"type": "string", "description": "YYYY-MM-DD"},
-                   "start_over": {"type": "boolean", "description": "Replace an existing practice account"}}),
+                   "start_over": {"type": "boolean", "description": "Replace an existing practice account"},
+                   "scenario": {"type": "string", "description": "A name from practice_scenarios"}}),
              practice_start, read_only=False),
         Tool("practice_order", "Place an order in the practice account (pretend money). It fills at the next "
              "day's prices, after time is moved forward.",
@@ -180,6 +270,10 @@ def build(book: prices.PriceBook | None = None) -> Server:
              _obj({"days": {"type": "integer", "minimum": 1, "description": "Trading days to move (default 1)"}}),
              practice_next_day, read_only=False),
         Tool("practice_history", "List every fill in the practice account so far.", _obj({}), practice_history),
+        Tool("practice_report", "The report card: how the practice account did since it started against simply "
+             "holding, with a plain-words verdict.", _obj({}), practice_report),
+        Tool("practice_scenarios", "Named starting points worth living through (a crash, a bear market, a rally) "
+             "for practice_start.", _obj({}), practice_scenarios),
     ]
     for tool in tools:
         server.add(Tool(tool.name, tool.description, tool.input_schema, guarded(tool.handler), tool.read_only))

@@ -76,7 +76,10 @@ def cmd_home(args, console: Console) -> int:
         console.say(s.what, indent=12)
         console.note(f"            {s.command}")
     nxt = guide.next_step()
+    done = sum(1 for r in rows if r["done"])
     console.write()
+    console.say(console.style(f"{done} of {len(rows)} steps done.", "bold") if done else
+                console.style("Welcome. Nothing is set up yet; step 1 takes about five minutes.", "bold"))
     if nxt:
         console.say(f"Next for you: step {nxt.number}. Run: {nxt.command}   (lesson: aitk lesson {nxt.number})")
     else:
@@ -371,10 +374,31 @@ def cmd_sweep(args, console: Console) -> int:
 def cmd_practice(args, console: Console) -> int:
     acct = practice.Practice()
     sub = args.practice_cmd
+    if sub == "scenarios":
+        console.title("Starting points worth living through")
+        console.table(["name", "starts", "why"], [[k, v[0], v[1]] for k, v in practice.SCENARIOS.items()])
+        console.say("Start one: aitk practice start --scenario 2022-bear   (needs real prices: aitk prices get SPY)")
+        return 0
+    if sub == "report":
+        rep = acct.report()
+        console.title(f"Report card   {rep['started_on']} to {rep['today']}"
+                      + (f"   scenario: {rep['scenario']}" if rep["scenario"] else ""))
+        if rep["scenario_note"]:
+            console.note(rep["scenario_note"])
+        console.table(["you", f"holding {rep['hold_symbol']}", "account value", "fills", "trading days"],
+                      [[_pct(rep["you_pct"]), _pct(rep["hold_pct"]), _money(rep["account_value"]), rep["fills"],
+                        rep["trading_days"]]])
+        console.write()
+        for line in rep["verdict"]:
+            console.say(f"- {line}")
+        return 0
     if sub == "start":
-        st = acct.start(cash=args.cash, start=args.start, replace=args.reset)
+        st = acct.start(cash=args.cash, start=args.start, replace=args.reset, scenario=args.scenario)
         console.ok(f"Practice account opened with {_money(st.started_with)} of pretend money. Today is {st.today}.")
-        console.say("Place an order (aitk practice buy SPY 5), then move time forward (aitk practice next).")
+        if args.scenario:
+            console.note(practice.SCENARIOS[args.scenario][1])
+        console.say("Place an order (aitk practice buy SPY 5), then move time forward (aitk practice next). "
+                    "See how you are doing any time with: aitk practice report")
         state.mark_done("practice")
         return 0
     if sub == "status":
@@ -439,6 +463,19 @@ def cmd_prompts(args, console: Console) -> int:
     console.title("Questions to paste into your AI app")
     console.table(["name", "what it asks"], [[n, guide.prompt_title(n)] for n in guide.prompt_names()])
     console.say("Print one: aitk prompts <name>")
+    return 0
+
+
+def cmd_where(args, console: Console) -> int:
+    console.table(["what", "where"], [
+        ["the kit's home folder", str(paths.home())],
+        ["price files", str(paths.prices_dir())],
+        ["your strategies", str(paths.strategies_dir())],
+        ["practice account", str(paths.paper_file().parent)],
+        ["saved reports", str(paths.reports_dir())],
+        ["settings backups", str(paths.backups_dir())],
+    ])
+    console.note("Move it all by setting the AITK_HOME environment variable.")
     return 0
 
 
@@ -546,7 +583,10 @@ def build_parser() -> argparse.ArgumentParser:
     s.add_argument("--cash", type=float, default=practice.DEFAULT_CASH)
     s.add_argument("--start", metavar="YYYY-MM-DD", help="the day to begin on (default: about a year back)")
     s.add_argument("--reset", action="store_true", help="replace an existing practice account")
+    s.add_argument("--scenario", choices=list(practice.SCENARIOS), help="begin at a moment worth living through")
     pr.add_parser("status")
+    pr.add_parser("report", help="how you did against simply holding")
+    pr.add_parser("scenarios", help="starting points worth living through")
     for side in ("buy", "sell"):
         o = pr.add_parser(side)
         o.add_argument("symbol")
@@ -564,6 +604,7 @@ def build_parser() -> argparse.ArgumentParser:
     c = sub.add_parser("prompts", help="questions to paste into your AI")
     c.add_argument("name", nargs="?")
     c.set_defaults(func=cmd_prompts)
+    sub.add_parser("where", help="the folders the kit uses").set_defaults(func=cmd_where)
     c = sub.add_parser("lesson", help="read a step's lesson")
     c.add_argument("step")
     c.set_defaults(func=cmd_lesson)

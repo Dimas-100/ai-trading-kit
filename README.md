@@ -70,6 +70,20 @@ The practice account: place an order, move time forward, see what filled:
   a settings sweep that chooses on the first part of history and judges on the last, and a practice
   account that fills at the next day's prices.
 
+## Not a trader? It still helps
+
+Most people's money sits in index funds and a retirement account. Steps 1 and 2 are for them:
+connect, then ask `retirement-check` (am I on track?), `fees-check` (what am I paying?),
+`monthly-checkin` (a look in the mirror) and `all-my-accounts` (several brokers in one view). No
+trading required, and no advice given: numbers first, then what they mean.
+
+## Your AI can guide the setup
+
+Once the lab is connected (step 3), you can ask your AI "where am I on the path?", "help me connect
+Fidelity" or "check my connections". It knows every broker, hands you the exact command, and re-tests
+what you set up. It is told never to ask for a key in the chat; keys are typed only into the wizard
+in your own terminal.
+
 ## Brokers
 
 The kit sets up each broker's **official** connector and never uses tools that log in with your
@@ -136,6 +150,14 @@ aitk practice start && aitk practice buy SPY 5 && aitk practice next
 Until you download prices, every command runs on made-up demo prices and says so. Built-in
 strategies: `buy_hold` (the benchmark), `sma_cross`, `rsi2`, `donchian`. Your own go in the kit's
 home folder as one Python file each (`aitk strategy new NAME` writes a template).
+
+Every backtest ends with a **reality check**: the longest stretch you would have sat below a previous
+peak, the worst run of losing trades, and the biggest single loss in dollars. Those end more
+strategies than bad returns do.
+
+**Live through a hard year.** `aitk practice start --scenario 2022-bear` begins the practice account
+in January 2022 (also `2020-crash`, `2023-rally`, `2025-tariffs`). Move a week at a time, decide each
+time, then `aitk practice report` shows how you did against simply holding, with a verdict.
 
 ## What this kit refuses to do
 

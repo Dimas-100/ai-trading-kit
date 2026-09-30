@@ -55,12 +55,32 @@ def _extra_metrics(result: backtest.Result) -> dict:
         var = sum((r - mean) ** 2 for r in rets) / (len(rets) - 1)
         if var > 0:
             sharpe = mean / math.sqrt(var) * math.sqrt(252)
+    # What a person would have lived through: the longest stretch below a previous peak, the worst run of
+    # losing trades, the biggest single loss in dollars.
+    peak, under, longest_under, drawdown_start, longest_span = float("-inf"), 0, 0, None, ("", "")
+    for ts, eq in curve:
+        if eq >= peak:
+            peak, under, drawdown_start = eq, 0, None
+        else:
+            under += 1
+            drawdown_start = drawdown_start or ts
+            if under > longest_under:
+                longest_under, longest_span = under, (drawdown_start, ts)
+    streak = worst_streak = 0
+    for t in trades:
+        streak = streak + 1 if t.pnl <= 0 else 0
+        worst_streak = max(worst_streak, streak)
+    biggest_loss = min((t.pnl for t in trades), default=0.0)
     return {
         "profit_factor": round(gains / losses, 2) if losses > 0 else (None if not gains else float("inf")),
         "best_trade_pct": round(max((t.return_pct for t in trades), default=0.0), 2),
         "worst_trade_pct": round(min((t.return_pct for t in trades), default=0.0), 2),
         "sharpe": round(sharpe, 2),
         "stopped_out": sum(1 for t in trades if t.reason == "stop"),
+        "longest_underwater_days": longest_under,
+        "longest_underwater_span": list(longest_span),
+        "longest_losing_streak": worst_streak,
+        "biggest_loss": round(biggest_loss, 2),
     }
 
 
@@ -81,6 +101,20 @@ def verdict(metrics: dict) -> list[str]:
         out.append(f"It made {total:.1f}%, which is less than the {bh:.1f}% from simply buying and holding.")
     mdd = abs(metrics["max_drawdown_pct"])
     out.append(f"At its worst it was down {mdd:.1f}% from a peak. Ask whether you would have kept going.")
+    days = metrics.get("longest_underwater_days", 0)
+    if days >= 21:
+        months = days / 21
+        span = metrics.get("longest_underwater_span") or ["", ""]
+        when = f" ({span[0]} to {span[1]})" if span[0] else ""
+        out.append(f"The longest stretch below a previous peak lasted about {months:.0f} months{when}. That is "
+                   "how long you would have waited with nothing to show for it.")
+    streak = metrics.get("longest_losing_streak", 0)
+    if streak >= 3:
+        out.append(f"The worst run was {streak} losing trades in a row. Most people stop following a rule "
+                   "around the third loss; the rule only works if you do not.")
+    loss = metrics.get("biggest_loss", 0.0)
+    if loss < 0:
+        out.append(f"The biggest single loss was ${-loss:,.0f} on a ${metrics.get('starting_cash', 0):,.0f} start.")
     if metrics["exposure_pct"] < 100:
         out.append(f"Money was in the market {metrics['exposure_pct']:.0f}% of the time; the rest sat in cash.")
     out.append("A backtest shows what would have happened, not what will. It ignores taxes and assumes "
