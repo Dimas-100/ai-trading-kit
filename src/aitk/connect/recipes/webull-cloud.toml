@@ -1,0 +1,15 @@
+id = "webull-cloud"
+name = "Webull (sign in, no API keys)"
+summary = "Webull's hosted connector. No application and no keys: you sign in at Webull and choose what the AI may see."
+assets = ["stocks", "options", "futures", "crypto"]
+difficulty = "easy"
+read_only = "sign-in"
+read_only_note = "While signing in, tick only Account Infos, Order Query, Market Data and Security Master. Leave every trading box unticked. Webull also asks you to confirm any order in its app."
+docs_url = "https://developer.webull.com/apis/docs/AI-friendly-Resources/mcp/"
+checked = "2026-09-29"
+confidence = "checked"
+access_steps = ["You need a Webull account and its trading password. Nothing to apply for."]
+
+[connector]
+transport = "oauth"
+url = "https://api.webull.com/mcp"

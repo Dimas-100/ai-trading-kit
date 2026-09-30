@@ -1,0 +1,16 @@
+id = "coinbase"
+name = "Coinbase"
+summary = "Crypto. Coinbase's hosted connector: you sign in at Coinbase, no keys to copy."
+assets = ["crypto"]
+difficulty = "easy"
+read_only = "sign-in"
+read_only_note = "While signing in, grant only the permissions that read portfolios and accounts. Coinbase suggests pointing an AI at a separate portfolio that holds little."
+docs_url = "https://docs.cdp.coinbase.com/coinbase-for-agents/overview"
+checked = "2026-09-29"
+confidence = "partly"
+access_steps = ["You need a Coinbase account. Nothing to apply for: you sign in when your AI app first connects."]
+warning = "If you grant trading permissions while signing in, this connection can trade."
+
+[connector]
+transport = "oauth"
+url = "https://agents.coinbase.com/mcp"

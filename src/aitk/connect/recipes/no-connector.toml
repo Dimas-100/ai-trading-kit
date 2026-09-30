@@ -1,0 +1,11 @@
+id = "no-connector"
+name = "Fidelity, Vanguard, Schwab, E*TRADE, Merrill, SoFi, Firstrade"
+status = "listed"
+summary = "These brokers offer no official connector for AI assistants."
+assets = ["stocks", "funds"]
+difficulty = "none"
+read_only = "none"
+checked = "2026-09-29"
+confidence = "partly"
+covers = ["Fidelity", "Vanguard", "Charles Schwab", "Schwab", "E*TRADE", "Etrade", "Merrill", "Merrill Edge", "SoFi", "Firstrade"]
+advice = "Use SnapTrade: it reads Fidelity, Schwab, Vanguard and others without being able to trade. The kit does not use tools that log in with your password: they break most brokers' terms and can get an account locked."

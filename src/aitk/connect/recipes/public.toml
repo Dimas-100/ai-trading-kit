@@ -1,0 +1,30 @@
+id = "public"
+name = "Public"
+summary = "Stocks, options, crypto and bonds. Keys are available to every member without approval."
+assets = ["stocks", "options", "crypto", "bonds"]
+difficulty = "easy"
+read_only = "kit"
+read_only_note = "Public's connector has no read-only switch of its own, so the kit's guard is the lock: it removes every tool that could change the account."
+docs_url = "https://github.com/PublicDotCom/publicdotcom-mcp-server"
+checked = "2026-09-29"
+confidence = "partly"
+access_steps = [
+  "Sign in at https://public.com and open https://public.com/settings/v2/api",
+  "Create a secret key. Keep the page open: you will paste it in the next step.",
+]
+
+[[fields]]
+key = "PUBLIC_COM_SECRET"
+label = "Public secret key"
+
+[[fields]]
+key = "PUBLIC_COM_ACCOUNT_ID"
+label = "Public account id"
+secret = false
+optional = true
+help = "Optional. Leave empty to use your default account."
+
+[connector]
+transport = "stdio"
+command = ["uvx", "publicdotcom-mcp-server"]
+needs = ["uvx"]

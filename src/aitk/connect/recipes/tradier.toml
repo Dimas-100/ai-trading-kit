@@ -1,0 +1,31 @@
+id = "tradier"
+name = "Tradier"
+summary = "Stocks and options. A token is available at once, with a free practice (sandbox) account."
+assets = ["stocks", "options"]
+difficulty = "easy"
+read_only = "kit"
+read_only_note = "Tradier's connector has no read-only switch of its own, so the kit's guard is the lock: it removes every tool that could change the account."
+docs_url = "https://docs.tradier.com/docs/tradier-mcp"
+checked = "2026-09-29"
+confidence = "checked"
+access_steps = [
+  "Sign in at https://web.tradier.com and open https://web.tradier.com/user/api",
+  "Copy the access token. There is one for your real account and one for the practice (sandbox) account.",
+]
+
+[[fields]]
+key = "API_KEY"
+label = "Tradier access token"
+
+[[fields]]
+key = "PAPER_TRADING"
+label = "Which account is this token for"
+secret = false
+default = "true"
+choices = ["true", "false"]
+help = "true = the practice (sandbox) token. false = your real account."
+
+[connector]
+transport = "http"
+url = "https://mcp.tradier.com/mcp"
+header_fields = ["API_KEY", "PAPER_TRADING"]

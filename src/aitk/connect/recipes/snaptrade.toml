@@ -1,0 +1,21 @@
+id = "snaptrade"
+name = "SnapTrade (Fidelity, Schwab, Vanguard and more)"
+summary = "One read-only connection to brokers that offer no connector of their own. Free for personal use."
+assets = ["stocks", "options", "crypto", "funds"]
+difficulty = "easy"
+read_only = "broker"
+read_only_note = "Read-only by design: SnapTrade states this connector cannot place trades, move money or change account settings."
+docs_url = "https://docs.snaptrade.com/docs/mcp-server"
+checked = "2026-09-29"
+confidence = "checked"
+covers = ["Fidelity", "Charles Schwab", "Schwab", "Vanguard", "Robinhood", "Interactive Brokers", "E*TRADE", "Etrade"]
+access_steps = [
+  "Create a free SnapTrade Personal account at https://snaptrade.com",
+  "Inside SnapTrade, link your brokerage. You sign in at your broker; SnapTrade does not see your password.",
+  "Check on SnapTrade's site that your broker is listed before you start: coverage changes.",
+]
+warning = "SnapTrade is a separate company that sits between you and your broker. Your positions and balances pass through it."
+
+[connector]
+transport = "oauth"
+url = "https://mcp.snaptrade.com/mcp"

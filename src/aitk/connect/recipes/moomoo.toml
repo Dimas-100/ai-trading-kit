@@ -1,0 +1,16 @@
+id = "moomoo"
+name = "Moomoo"
+summary = "Stocks and options. Moomoo's hosted connector, with practice trading available."
+assets = ["stocks", "options"]
+difficulty = "easy"
+read_only = "none"
+read_only_note = "Moomoo's connector includes order placement and no read-only switch was found."
+docs_url = "https://open.moomoo.com/"
+checked = "2026-09-29"
+confidence = "partly"
+access_steps = ["You need a Moomoo account. Nothing to apply for: you sign in when your AI app first connects."]
+warning = "This connection is NOT read-only: it can place orders. Use Moomoo's practice (paper) account until you are sure."
+
+[connector]
+transport = "oauth"
+url = "https://mcp.moomoo.com/mcp"

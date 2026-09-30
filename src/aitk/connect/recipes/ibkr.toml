@@ -1,0 +1,11 @@
+id = "ibkr"
+name = "Interactive Brokers"
+status = "listed"
+summary = "An official hosted connector was announced in July 2026. Its address could not be confirmed, so the wizard does not set it up yet."
+assets = ["stocks", "options", "futures", "forex", "bonds"]
+difficulty = "medium"
+read_only = "none"
+docs_url = "https://www.interactivebrokers.com/en/general/about/mediaRelations/7-28-26.php"
+checked = "2026-09-29"
+confidence = "unchecked"
+advice = "Follow Interactive Brokers' own instructions, or connect through SnapTrade for a connection that cannot trade."

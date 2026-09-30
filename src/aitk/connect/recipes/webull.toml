@@ -1,0 +1,38 @@
+id = "webull"
+name = "Webull (with your own API keys)"
+summary = "Stocks, options and more. Needs Webull's API approval (1 to 2 working days) and a text-message code the first time."
+assets = ["stocks", "options", "futures", "crypto"]
+difficulty = "medium"
+read_only = "kit"
+read_only_note = "Two locks: Webull's connector is started with only its account and market-data tools, and the kit's guard removes anything that could change the account."
+docs_url = "https://developer.webull.com/apis/docs/AI-friendly-Resources/local-mcp/"
+checked = "2026-09-29"
+confidence = "checked"
+access_steps = [
+  "Sign in at https://developer.webull.com with your Webull account.",
+  "Apply for API access under OpenAPI Management > My Application. Approval takes 1 to 2 working days.",
+  "Once approved: API Management > API Keys Management > Generate Key.",
+  "Keep the page open. You will paste the App Key and the App Secret in the next step.",
+  "Market data is a separate free step: in the Webull app, open Advanced Quotes and claim 'Nasdaq Basic - Non Display' under OpenAPI Advanced Quotes.",
+]
+
+[[fields]]
+key = "WEBULL_APP_KEY"
+label = "Webull App Key"
+secret = false
+
+[[fields]]
+key = "WEBULL_APP_SECRET"
+label = "Webull App Secret"
+
+[connector]
+transport = "stdio"
+command = ["uvx", "webull-openapi-mcp", "serve"]
+needs = ["uvx"]
+first_run = ["uvx", "webull-openapi-mcp", "auth"]
+first_run_note = "Webull sends a code to the Webull app on your phone the first time. It lasts about 15 days and renews by itself."
+
+[connector.env]
+WEBULL_REGION_ID = "us"
+WEBULL_ENVIRONMENT = "prod"
+WEBULL_TOOLSETS = "account,market-data"

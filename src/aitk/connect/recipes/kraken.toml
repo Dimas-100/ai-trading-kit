@@ -1,0 +1,30 @@
+id = "kraken"
+name = "Kraken"
+summary = "Crypto. Kraken's own command-line tool, with a built-in practice mode."
+assets = ["crypto"]
+difficulty = "medium"
+platforms = ["macos", "linux"]
+read_only = "kit"
+read_only_note = "Three locks: create the key with only the two 'Query' permissions, Kraken's connector starts without its trade and funding tools, and the kit's guard removes anything that could change the account."
+docs_url = "https://github.com/krakenfx/kraken-cli"
+checked = "2026-09-29"
+confidence = "checked"
+access_steps = [
+  "Install Kraken's command-line tool by following https://github.com/krakenfx/kraken-cli (macOS and Linux; on Windows it runs only inside WSL).",
+  "At kraken.com open Settings > API and create a key.",
+  "Tick ONLY 'Query Funds' and 'Query Open Orders & Trades'. Leave every other permission unticked.",
+]
+
+[[fields]]
+key = "KRAKEN_API_KEY"
+label = "Kraken API key"
+secret = false
+
+[[fields]]
+key = "KRAKEN_API_SECRET"
+label = "Kraken private key"
+
+[connector]
+transport = "stdio"
+command = ["kraken", "mcp"]
+needs = ["kraken"]

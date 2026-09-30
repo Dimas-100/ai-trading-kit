@@ -1,0 +1,11 @@
+id = "tradestation"
+name = "TradeStation"
+status = "listed"
+summary = "An official connector exists. Its address and account requirements could not be confirmed, so the wizard does not set it up yet."
+assets = ["stocks", "options", "futures"]
+difficulty = "hard"
+read_only = "none"
+docs_url = "https://www.tradestation.com/platforms-and-tools/mcp/"
+checked = "2026-09-29"
+confidence = "unchecked"
+advice = "Follow TradeStation's own instructions."

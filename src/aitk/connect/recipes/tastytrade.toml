@@ -1,0 +1,12 @@
+id = "tastytrade"
+name = "tastytrade"
+status = "listed"
+summary = "Stocks, options and futures. An official connector with a real read-only switch, but it must be built from source."
+assets = ["stocks", "options", "futures"]
+difficulty = "hard"
+read_only = "broker"
+read_only_note = "Set TASTYTRADE_READ_ONLY=1 and the connector withholds every tool that can change the account."
+docs_url = "https://github.com/tastytrade/tastytrade-mcp"
+checked = "2026-09-29"
+confidence = "checked"
+advice = "Not set up by the wizard yet, because the connector has to be downloaded and built with Node 22 first. Follow the broker's own guide and set TASTYTRADE_READ_ONLY=1."

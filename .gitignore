@@ -1,0 +1,23 @@
+# secrets: a committed secret lives in git history forever
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*secret*
+token*.json
+
+# your own workspace (practice account, downloaded prices, reports)
+workspace/
+
+# python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+*.log

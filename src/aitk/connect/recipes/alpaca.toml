@@ -1,0 +1,41 @@
+id = "alpaca"
+name = "Alpaca"
+summary = "Stocks, options and crypto. Free practice account, keys in a minute. The easiest place to start."
+assets = ["stocks", "options", "crypto"]
+difficulty = "easy"
+read_only = "kit"
+read_only_note = "Two locks: Alpaca's connector is started without its trading tools, and the kit's guard removes anything that could change the account."
+docs_url = "https://github.com/alpacahq/alpaca-mcp-server"
+checked = "2026-09-29"
+confidence = "checked"
+access_steps = [
+  "Create a free account at https://app.alpaca.markets/signup (no deposit needed for the practice account).",
+  "Open the practice dashboard: https://app.alpaca.markets/paper/dashboard/overview",
+  "Find the 'API Keys' box and choose 'Generate New Keys'.",
+  "Keep the page open. You will paste the Key and the Secret in the next step. The Secret is shown only once.",
+]
+
+[[fields]]
+key = "ALPACA_API_KEY"
+label = "Alpaca API key"
+secret = false
+
+[[fields]]
+key = "ALPACA_SECRET_KEY"
+label = "Alpaca API secret"
+
+[[fields]]
+key = "ALPACA_PAPER_TRADE"
+label = "Which account are these keys for"
+secret = false
+default = "true"
+choices = ["true", "false"]
+help = "true = the practice account (recommended). false = your real account."
+
+[connector]
+transport = "stdio"
+command = ["uvx", "alpaca-mcp-server"]
+needs = ["uvx"]
+
+[connector.env]
+ALPACA_TOOLSETS = "account,assets,stock-data,crypto-data,options-data,corporate-actions,news"

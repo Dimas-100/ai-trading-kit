@@ -1,0 +1,16 @@
+id = "robinhood"
+name = "Robinhood"
+summary = "Robinhood's hosted connector. Reads every account; trading is limited to a separate 'Agentic' account."
+assets = ["stocks", "options", "crypto"]
+difficulty = "easy"
+read_only = "none"
+read_only_note = "Robinhood offers no read-only switch. The AI can read all your accounts and can trade inside the separate Agentic account only."
+docs_url = "https://robinhood.com/us/en/support/articles/agentic-trading-overview/"
+checked = "2026-09-29"
+confidence = "checked"
+access_steps = ["You need a Robinhood account. Nothing to apply for: you sign in when your AI app first connects."]
+warning = "This connection is NOT read-only. To keep it from trading, do not move money into the Agentic account. For a connection that cannot trade at all, choose SnapTrade and link Robinhood there."
+
+[connector]
+transport = "oauth"
+url = "https://agent.robinhood.com/mcp/trading"
