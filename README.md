@@ -47,6 +47,11 @@ step's lesson; `aitk check` re-tests every connection and says what to fix.
 
 ## What it looks like
 
+Ninety seconds, real commands, real SPY prices: the path, a backtest with its reality check, and a
+practice session that starts in the 2022 bear market.
+
+![Demo: aitk, a backtest, a practice session in 2022 and its report card](docs/images/demo.gif)
+
 A real run with a free Alpaca paper account, from the connection test to a question answered in Claude Desktop.
 
 `aitk check` starts the connector the way the AI app will and shows what the guard removed:
